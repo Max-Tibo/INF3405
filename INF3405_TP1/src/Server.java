@@ -97,8 +97,8 @@ public class Server {
 
 		public void processImage() {
 			try {
-				InputStream inputStream = this.socket_.getInputStream();
 				byte[] paquet = null;
+				InputStream inputStream = this.socket_.getInputStream();
 				inputStream.read(paquet);
 				ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(paquet);
 				BufferedImage buffImg = ImageIO.read(byteArrayInputStream);
