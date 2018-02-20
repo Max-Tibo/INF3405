@@ -36,7 +36,7 @@ public class Client {
 		Socket socket = new Socket(this.ipAddr_, this.port_);
 		OutputStream outputStream = socket.getOutputStream();
 		importPicture();
-		outputStream.write(ImageToByte());
+		SendImageToByte(outputStream);
 		InputStream inputStream = socket.getInputStream();
 		socket.close();
 	}
@@ -104,12 +104,14 @@ public class Client {
 		}
 	}
 
-	private byte[] ImageToByte() {
+	private void SendImageToByte(OutputStream &outputStream) {
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-		byte[] paquet = null;
 		try {
 			ImageIO.write(this.buffImg_, "JPEG", byteArrayOutputStream);
-			paquet = byteArrayOutputStream.toByteArray();
+			byte[] size = ByteBuffer.allocate(4).putInt(byteArrayOutputStream.size()).array();
+			byte[] paquet = byteArrayOutputStream.toByteArray();
+			outputStream.write(size);
+			outputStream.write(paquet);
 		} catch (Exception e) {
 			System.out.println(e);
 		}
