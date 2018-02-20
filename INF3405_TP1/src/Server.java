@@ -97,29 +97,32 @@ public class Server {
 
 		public void processImage() {
 			try {
-				byte[] paquet = null;
+				byte[] size = new byte[4];
 				InputStream inputStream = this.socket_.getInputStream();
+				inputStream.read(size);
+				byte[] paquet = new byte[ByteBuffer.wrap(size).asIntBuffer().get()];
 				inputStream.read(paquet);
 				ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(paquet);
 				BufferedImage buffImg = ImageIO.read(byteArrayInputStream);
 				BufferedImage processedImage = Sobel.process(buffImg);
 				OutputStream outputStream = this.socket_.getOutputStream();
-				outputStream.write(ImageToByte(processedImage));
+				ImageToByte(processedImage, outputStream);
 			} catch (IOException e) {
 				System.out.println(e);
 			}
 		}
 
-		private byte[] ImageToByte(BufferedImage sobelImage) {
+		private void SendImageToByte(BufferedImage sobelImage, OutputStream &outputStream) {
 			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-			byte[] paquet = null;
 			try {
 				ImageIO.write(sobelImage, "JPEG", byteArrayOutputStream);
-				paquet = byteArrayOutputStream.toByteArray();
+				byte[] size = ByteBuffer.allocate(4).putInt(byteArrayOutputStream.size()).array();
+				byte[] paquet = byteArrayOutputStream.toByteArray();
+				outputStream.write(size);
+				outputStream.write(paquet);
 			} catch (Exception e) {
 				System.out.println(e);
 			}
-			return paquet;
 		}
 	}
 
