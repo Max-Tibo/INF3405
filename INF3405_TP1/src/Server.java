@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.util.Scanner;
 
 import javax.imageio.ImageIO;
@@ -95,24 +96,34 @@ public class Server {
 			System.out.println("Client " + this.clientId_ + " is connected");
 		}
 
-		public void processImage() {
+		public void run() {
 			try {
-				byte[] size = new byte[4];
 				InputStream inputStream = this.socket_.getInputStream();
-				inputStream.read(size);
-				byte[] paquet = new byte[ByteBuffer.wrap(size).asIntBuffer().get()];
-				inputStream.read(paquet);
-				ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(paquet);
-				BufferedImage buffImg = ImageIO.read(byteArrayInputStream);
-				BufferedImage processedImage = Sobel.process(buffImg);
+				BufferedImage processedImage = Sobel.process(recieveImage(inputStream));
 				OutputStream outputStream = this.socket_.getOutputStream();
-				ImageToByte(processedImage, outputStream);
+				sendImageToByte(processedImage, outputStream);
 			} catch (IOException e) {
 				System.out.println(e);
 			}
 		}
 
-		private void SendImageToByte(BufferedImage sobelImage, OutputStream &outputStream) {
+		private BufferedImage recieveImage(InputStream inputStream) {
+			try {
+				byte[] size = new byte[4];
+				inputStream.read(size);
+				byte[] paquet = new byte[ByteBuffer.wrap(size).asIntBuffer().get()];
+				inputStream.read(paquet);
+				ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(paquet);
+				BufferedImage buffImg = ImageIO.read(byteArrayInputStream);
+				System.out.println("Image successfully recieved by the server");
+				return buffImg;
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return null;
+		}
+
+		private void sendImageToByte(BufferedImage sobelImage, OutputStream outputStream) {
 			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 			try {
 				ImageIO.write(sobelImage, "JPEG", byteArrayOutputStream);
@@ -120,6 +131,7 @@ public class Server {
 				byte[] paquet = byteArrayOutputStream.toByteArray();
 				outputStream.write(size);
 				outputStream.write(paquet);
+				System.out.println("Image was processed and sent to client");
 			} catch (Exception e) {
 				System.out.println(e);
 			}

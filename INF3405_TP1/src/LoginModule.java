@@ -2,7 +2,7 @@ import java.io.*;
 import java.util.Scanner;
 
 public class LoginModule {
-	static String dbPath = "C:\\Users\\maxim\\eclipse-workspace\\INF3405_TP1\\src\\UserCredentials_DB.txt";
+	static String dbPath = System.getProperty("user.dir") + "\\src\\UserCredentials_DB.txt";
 
 	public static boolean connection() {
 		boolean isUsername = false;

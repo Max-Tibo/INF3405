@@ -1,16 +1,19 @@
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.util.Scanner;
 
 import javax.imageio.ImageIO;
 
 public class Client {
 	private String ipAddr_;
+	private String path_;
 	private int port_;
 	public BufferedImage buffImg_;
 
@@ -23,6 +26,7 @@ public class Client {
 		this.ipAddr_ = "";
 		this.port_ = 0;
 		this.buffImg_ = null;
+		this.path_ = System.getProperty("user.dir") + "\\src\\";
 	}
 
 	public void connectToServer() throws IOException {
@@ -36,8 +40,9 @@ public class Client {
 		Socket socket = new Socket(this.ipAddr_, this.port_);
 		OutputStream outputStream = socket.getOutputStream();
 		importPicture();
-		SendImageToByte(outputStream);
+		sendImageToByte(outputStream);
 		InputStream inputStream = socket.getInputStream();
+		recieveSobelImage(inputStream);
 		socket.close();
 	}
 
@@ -89,11 +94,13 @@ public class Client {
 
 	private void importPicture() {
 		String path = "";
+		String imageName = "";
 		Scanner sc = new Scanner(System.in);
 		boolean isPath = false;
 		while (!isPath) {
-			System.out.print("Enter the image's path: ");
-			path = sc.nextLine();
+			System.out.print("Enter the image's name: ");
+			imageName = sc.nextLine();
+			path = this.path_ + imageName + ".jpg";
 			try {
 				this.buffImg_ = ImageIO.read(new File(path));
 				isPath = true;
@@ -104,7 +111,7 @@ public class Client {
 		}
 	}
 
-	private void SendImageToByte(OutputStream &outputStream) {
+	private void sendImageToByte(OutputStream outputStream) {
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 		try {
 			ImageIO.write(this.buffImg_, "JPEG", byteArrayOutputStream);
@@ -112,8 +119,28 @@ public class Client {
 			byte[] paquet = byteArrayOutputStream.toByteArray();
 			outputStream.write(size);
 			outputStream.write(paquet);
+			System.out.println("Image was sent to the server");
 		} catch (Exception e) {
 			System.out.println(e);
+		}
+	}
+
+	private void recieveSobelImage(InputStream inputStream) {
+		try {
+			byte[] size = new byte[4];
+			inputStream.read(size);
+			byte[] paquet = new byte[ByteBuffer.wrap(size).asIntBuffer().get()];
+			inputStream.read(paquet);
+			ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(paquet);
+			BufferedImage sobelImage = ImageIO.read(byteArrayInputStream);
+			String path = this.path_ + "sobelImage.jpg";
+			File outputfile = new File(path);
+			outputfile.createNewFile();
+			ImageIO.write(sobelImage, "jpg", outputfile);
+			System.out.println("Image was successfully recieved by the client");
+			System.out.println("Filtered image was saved to url: " + path);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 }
