@@ -17,7 +17,7 @@ public class Server {
 	private static String ipAddr_;
 	private static int port_;
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) throws Exception { //Programme principale du serveur gérant les Threads
 		int clientId = 0;
 		System.out.println("Enter the server settings");
 		choosePort();
@@ -31,16 +31,17 @@ public class Server {
 
 		try {
 			while (true) {
-				new ServerHost(listener.accept(), clientId++).start();
+				new ServerHost(listener.accept(), clientId++); //Connection client-serveur
 			}
 		} catch (IOException e) {
 			System.out.println(e);
 		} finally {
-			listener.close();
+			listener.close(); //Fin de la connection
+			clientId--;
 		}
 	}
 
-	private static void choosePort() {
+	private static void choosePort() { //Configurer le port d'écoute
 		Scanner sc = new Scanner(System.in);
 		boolean validPort = false;
 		while (!validPort) {
@@ -51,7 +52,7 @@ public class Server {
 		}
 	}
 
-	private static void chooseIPAddr() {
+	private static void chooseIPAddr() { //Configurer l'adresse IP 
 		Scanner sc = new Scanner(System.in);
 		boolean validIP = false;
 		while (!validIP) {
@@ -62,7 +63,7 @@ public class Server {
 		}
 	}
 
-	private static boolean checkPort(int port) {
+	private static boolean checkPort(int port) { //Vérifit la validité du port
 		if (port < 5000 || port > 5050) {
 			System.out.println("Not a valid listening port");
 			return false;
@@ -70,7 +71,7 @@ public class Server {
 		return true;
 	}
 
-	private static boolean checkIPAddr(String ipAddr) {
+	private static boolean checkIPAddr(String ipAddr) { //Vérifit la validité de l'adresse IP
 		String[] addrSegment;
 		addrSegment = ipAddr.split("\\.");
 		if (addrSegment.length > 4) {
@@ -90,24 +91,34 @@ public class Server {
 		private Socket socket_;
 		private int clientId_;
 
-		public ServerHost(Socket socket, int clientId) {
+		public ServerHost(Socket socket, int clientId) throws InterruptedException { //Constructeur du Thread serveur
 			this.socket_ = socket;
 			this.clientId_ = clientId;
+			if (!LoginModule.connection(this.socket_)) { //Exécute le protocole de login/création de compte utilisateur
+				System.out.println("Failed to logging in, exiting program");
+				this.interrupt();
+			}
 			System.out.println("Client " + this.clientId_ + " is connected");
+			this.start();
 		}
 
-		public void run() {
-			try {
-				InputStream inputStream = this.socket_.getInputStream();
-				BufferedImage processedImage = Sobel.process(recieveImage(inputStream));
-				OutputStream outputStream = this.socket_.getOutputStream();
-				sendImageToByte(processedImage, outputStream);
-			} catch (IOException e) {
-				System.out.println(e);
+		public void run() { //Exécution du programme du Thread
+			while (this.socket_.isConnected()) {
+				try {
+					InputStream inputStream = this.socket_.getInputStream(); 
+					if (inputStream != null) {
+						BufferedImage processedImage = Sobel.process(recieveImage(inputStream));
+						OutputStream outputStream = this.socket_.getOutputStream();
+						sendImageToByte(processedImage, outputStream);
+						outputStream.flush();
+					}
+				} catch (IOException e) {
+					System.out.println(e);
+				}
 			}
 		}
 
-		private BufferedImage recieveImage(InputStream inputStream) {
+		private BufferedImage recieveImage(InputStream inputStream) { //Reçoit les données de l'image du client
 			try {
 				byte[] size = new byte[4];
 				inputStream.read(size);
@@ -123,7 +134,7 @@ public class Server {
 			return null;
 		}
 
-		private void sendImageToByte(BufferedImage sobelImage, OutputStream outputStream) {
+		private void sendImageToByte(BufferedImage sobelImage, OutputStream outputStream) { //Renvoie les nouvelles données images au client
 			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 			try {
 				ImageIO.write(sobelImage, "JPEG", byteArrayOutputStream);
@@ -131,7 +142,7 @@ public class Server {
 				byte[] paquet = byteArrayOutputStream.toByteArray();
 				outputStream.write(size);
 				outputStream.write(paquet);
-				System.out.println("Image was processed and sent to client");
+				System.out.println("Image was processed and sent to the client");
 			} catch (Exception e) {
 				System.out.println(e);
 			}

@@ -1,14 +1,17 @@
 import java.io.*;
+import java.net.Socket;
 import java.util.Scanner;
 
 public class LoginModule {
 	static String dbPath = System.getProperty("user.dir") + "\\src\\UserCredentials_DB.txt";
 
-	public static boolean connection() {
+	public static boolean connection(Socket socket) {
 		boolean isUsername = false;
 		boolean isLogin = false;
+		int tryCounter = 0;
 		try {
 			while (!isLogin) {
+				tryCounter++;
 				Scanner scanCredentials = new Scanner(new File(dbPath));
 				String[] userCredentials = null;
 				System.out.println("Enter user crendetials");
@@ -17,13 +20,13 @@ public class LoginModule {
 				Scanner sc = new Scanner(System.in);
 				String inUsername = sc.nextLine();
 
-				while (!inUsername.matches("[a-zA-Z]+")) {
+				while (!inUsername.matches("[a-zA-Z]+")) { //Demande un d'entrer un username en lettre
 					System.out.println("Invalid username");
 					System.out.print("Username (only letters): ");
 					inUsername = sc.nextLine();
 				}
 
-				while (scanCredentials.hasNextLine()) {
+				while (scanCredentials.hasNextLine()) { //Scan la bd à la recherche du username entré
 					userCredentials = scanCredentials.nextLine().toString().split("\\.");
 					if (inUsername.equals(userCredentials[0])) {
 						isUsername = true;
@@ -31,13 +34,17 @@ public class LoginModule {
 						break;
 					}
 				}
-				if (!isUsername) {
+				if (!isUsername) { //Demande de créer un nouveau compte si le username n'existe pas dans la bd
 					System.out.println("This User does not exist");
 					System.out.print("Create new User (y/n): ");
 					String anwser = sc.nextLine();
 					if (anwser.equals("y")) {
 						createUser(inUsername);
 					}
+				}
+				if (tryCounter > 4) {
+					System.out.println("Exceeded the limit of connection attempt");
+					break;
 				}
 			}
 			return isLogin;
@@ -47,7 +54,7 @@ public class LoginModule {
 		return false;
 	}
 
-	private static boolean login(String[] userCredentials) {
+	private static boolean login(String[] userCredentials) { //Demande un password et le confirme avec la bd
 		Scanner sc = new Scanner(System.in);
 		System.out.print("Password: ");
 		String inPassword = sc.nextLine();
@@ -60,7 +67,7 @@ public class LoginModule {
 		}
 	}
 
-	private static void createUser(String inUsername) {
+	private static void createUser(String inUsername) { //Création d'un compte utilisateur sauvegardé dans la bd
 		Scanner sc = new Scanner(System.in);
 		System.out.print("Choose password: ");
 		String newPassword = sc.nextLine();
@@ -72,6 +79,7 @@ public class LoginModule {
 			outCredentials.write(System.getProperty("line.separator"));
 			outCredentials.append(newUserCredentials);
 			outCredentials.close();
+			System.out.println("New account created");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
