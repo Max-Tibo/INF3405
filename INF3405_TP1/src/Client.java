@@ -22,20 +22,21 @@ public class Client {
 		client.connectToServer();
 	}
 
-	public Client() { //Constructeur client
+	public Client() { // Constructeur client
 		this.ipAddr_ = "";
 		this.port_ = 0;
 		this.buffImg_ = null;
 		this.path_ = System.getProperty("user.dir") + "\\src\\";
 	}
 
-	public void connectToServer() throws IOException { //Configuration et connection au serveur
+	public void connectToServer() throws IOException { // Configuration et connection au serveur
 		System.out.println("Enter the connection settings");
 		choosePort();
 		chooseIPAddr();
 		Socket socket = new Socket(this.ipAddr_, this.port_);
 		while (true) {
 			OutputStream outputStream = socket.getOutputStream();
+			System.out.println("Configure the connection credentials on the server first");
 			importPicture();
 			sendImageToByte(outputStream);
 			InputStream inputStream = socket.getInputStream();
@@ -45,10 +46,10 @@ public class Client {
 				break;
 			}
 		}
-		socket.close(); //Fin de connection
+		socket.close(); // Fin de connection
 	}
 
-	private void choosePort() { //Configurer le port de connection
+	private void choosePort() { // Configurer le port de connection
 		Scanner sc = new Scanner(System.in);
 		boolean validPort = false;
 		while (!validPort) {
@@ -59,7 +60,7 @@ public class Client {
 		}
 	}
 
-	private void chooseIPAddr() { //Configurer l'adresse IP
+	private void chooseIPAddr() { // Configurer l'adresse IP
 		Scanner sc = new Scanner(System.in);
 		boolean validIP = false;
 		while (!validIP) {
@@ -70,7 +71,7 @@ public class Client {
 		}
 	}
 
-	private boolean checkPort(int port) { //Vérifit la validité du port
+	private boolean checkPort(int port) { // Vérifit la validité du port
 		if (port < 5000 || port > 5050) {
 			System.out.println("Not a valid listening port");
 			return false;
@@ -78,7 +79,7 @@ public class Client {
 		return true;
 	}
 
-	private boolean checkIPAddr(String ipAddr) { //Vérifit la validité de l'adresse IP
+	private boolean checkIPAddr(String ipAddr) { // Vérifit la validité de l'adresse IP
 		String[] addrSegment;
 		addrSegment = ipAddr.split("\\.");
 		if (addrSegment.length > 4) {
@@ -94,7 +95,7 @@ public class Client {
 		return true;
 	}
 
-	private void importPicture() { //Importe l'image selon un path établit et son nom
+	private void importPicture() { // Importe l'image selon un path établit et son nom
 		String path = "";
 		String imageName = "";
 		Scanner sc = new Scanner(System.in);
@@ -113,7 +114,7 @@ public class Client {
 		}
 	}
 
-	private void sendImageToByte(OutputStream outputStream) { //Convertit et envoie l'image au serveur
+	private void sendImageToByte(OutputStream outputStream) { // Convertit et envoie l'image au serveur
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 		try {
 			ImageIO.write(this.buffImg_, "JPEG", byteArrayOutputStream);
@@ -127,7 +128,7 @@ public class Client {
 		}
 	}
 
-	private void recieveSobelImage(InputStream inputStream) { //Reçoit l'image de Sobel et la sauvegarde localement
+	private void recieveSobelImage(InputStream inputStream) { // Reçoit l'image de Sobel et la sauvegarde localement
 		try {
 			byte[] size = new byte[4];
 			inputStream.read(size);
@@ -146,13 +147,14 @@ public class Client {
 		}
 	}
 
-	private boolean disconnect() { //Déconnexion du client
+	private boolean disconnect() { // Déconnexion du client
 		Scanner sc = new Scanner(System.in);
 		System.out.print("Modify another image (y/n): ");
 		String anwser = sc.nextLine();
 		if (anwser.equals("y")) {
 			return false;
 		}
+		System.out.println("Disconnecting from server");
 		return true;
 	}
 }

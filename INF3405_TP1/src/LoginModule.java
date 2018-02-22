@@ -20,13 +20,13 @@ public class LoginModule {
 				Scanner sc = new Scanner(System.in);
 				String inUsername = sc.nextLine();
 
-				while (!inUsername.matches("[a-zA-Z]+")) { //Demande un d'entrer un username en lettre
+				while (!inUsername.matches("[a-zA-Z]+")) { // Demande un d'entrer un username en lettre
 					System.out.println("Invalid username");
 					System.out.print("Username (only letters): ");
 					inUsername = sc.nextLine();
 				}
 
-				while (scanCredentials.hasNextLine()) { //Scan la bd à la recherche du username entré
+				while (scanCredentials.hasNextLine()) { // Scan la bd à la recherche du username entré
 					userCredentials = scanCredentials.nextLine().toString().split("\\.");
 					if (inUsername.equals(userCredentials[0])) {
 						isUsername = true;
@@ -34,7 +34,7 @@ public class LoginModule {
 						break;
 					}
 				}
-				if (!isUsername) { //Demande de créer un nouveau compte si le username n'existe pas dans la bd
+				if (!isUsername) { // Demande de créer un nouveau compte si le username n'existe pas dans la bd
 					System.out.println("This User does not exist");
 					System.out.print("Create new User (y/n): ");
 					String anwser = sc.nextLine();
@@ -54,7 +54,7 @@ public class LoginModule {
 		return false;
 	}
 
-	private static boolean login(String[] userCredentials) { //Demande un password et le confirme avec la bd
+	private static boolean login(String[] userCredentials) { // Demande un password et le confirme avec la bd
 		Scanner sc = new Scanner(System.in);
 		System.out.print("Password: ");
 		String inPassword = sc.nextLine();
@@ -67,7 +67,7 @@ public class LoginModule {
 		}
 	}
 
-	private static void createUser(String inUsername) { //Création d'un compte utilisateur sauvegardé dans la bd
+	private static void createUser(String inUsername) { // Création d'un compte utilisateur sauvegardé dans la bd
 		Scanner sc = new Scanner(System.in);
 		System.out.print("Choose password: ");
 		String newPassword = sc.nextLine();

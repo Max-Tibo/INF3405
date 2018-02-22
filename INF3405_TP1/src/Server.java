@@ -97,6 +97,7 @@ public class Server {
 			if (!LoginModule.connection(this.socket_)) { //Exécute le protocole de login/création de compte utilisateur
 				System.out.println("Failed to logging in, exiting program");
 				this.interrupt();
+				this.join();
 			}
 			System.out.println("Client " + this.clientId_ + " is connected");
 			this.start();
@@ -113,7 +114,9 @@ public class Server {
 						outputStream.flush();
 					}
 				} catch (IOException e) {
+					System.out.println("Forced deconnexion");
 					System.out.println(e);
+					this.interrupt();
 				}
 			}
 		}
@@ -129,7 +132,7 @@ public class Server {
 				System.out.println("Image successfully recieved by the server");
 				return buffImg;
 			} catch (IOException e) {
-				e.printStackTrace();
+				System.out.println(e);
 			}
 			return null;
 		}
