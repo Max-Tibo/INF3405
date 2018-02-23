@@ -9,6 +9,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.sql.Timestamp;
 import java.util.Scanner;
 
 import javax.imageio.ImageIO;
@@ -94,7 +95,7 @@ public class Server {
 		public ServerHost(Socket socket, int clientId) throws InterruptedException { //Constructeur du Thread serveur
 			this.socket_ = socket;
 			this.clientId_ = clientId;
-			if (!LoginModule.connection(this.socket_)) { //Exécute le protocole de login/création de compte utilisateur
+			if (!LoginModule.connection()) { //Exécute le protocole de login/création de compte utilisateur
 				System.out.println("Failed to logging in, exiting program");
 				this.interrupt();
 				this.join();
@@ -129,7 +130,9 @@ public class Server {
 				inputStream.read(paquet);
 				ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(paquet);
 				BufferedImage buffImg = ImageIO.read(byteArrayInputStream);
-				System.out.println("Image successfully recieved by the server");
+				Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+		        System.out.println(timestamp);
+				System.out.println("Image successfully recieved by the server: " + socket_.getInetAddress() + " " + socket_.getLocalPort() + " " + timestamp);
 				return buffImg;
 			} catch (IOException e) {
 				System.out.println(e);

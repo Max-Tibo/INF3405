@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.Scanner;
 
@@ -26,7 +27,7 @@ public class Client {
 		this.ipAddr_ = "";
 		this.port_ = 0;
 		this.buffImg_ = null;
-		this.path_ = System.getProperty("user.dir") + "\\src\\";
+		this.path_ = System.getProperty("user.dir") + "\\";
 	}
 
 	public void connectToServer() throws IOException { // Configuration et connection au serveur
@@ -34,15 +35,16 @@ public class Client {
 		choosePort();
 		chooseIPAddr();
 		Socket socket = new Socket(this.ipAddr_, this.port_);
+		System.out.println("Configure the connection credentials on the server before proceeding to the next step!");
 		while (true) {
 			OutputStream outputStream = socket.getOutputStream();
-			System.out.println("Configure the connection credentials on the server first");
 			importPicture();
 			sendImageToByte(outputStream);
 			InputStream inputStream = socket.getInputStream();
 			recieveSobelImage(inputStream);
 			outputStream.flush();
 			if (disconnect()) {
+				outputStream.close();
 				break;
 			}
 		}
@@ -149,7 +151,7 @@ public class Client {
 
 	private boolean disconnect() { // Déconnexion du client
 		Scanner sc = new Scanner(System.in);
-		System.out.print("Modify another image (y/n): ");
+		System.out.print("Modify another image (y) or disconnect (any other key): ");
 		String anwser = sc.nextLine();
 		if (anwser.equals("y")) {
 			return false;

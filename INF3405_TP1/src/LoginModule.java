@@ -3,9 +3,9 @@ import java.net.Socket;
 import java.util.Scanner;
 
 public class LoginModule {
-	static String dbPath = System.getProperty("user.dir") + "\\src\\UserCredentials_DB.txt";
+	static String dbPath = System.getProperty("user.dir") + "\\UserCredentials_DB.txt";
 
-	public static boolean connection(Socket socket) {
+	public static boolean connection() {
 		boolean isUsername = false;
 		boolean isLogin = false;
 		int tryCounter = 0;
